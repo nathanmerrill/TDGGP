@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:group name="action">
+        <xs:choice>
+            <xs:element name="perform">
+                <xs:complexType>
+                    <xs:attribute type="xs:string" name="action" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="select">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="filter">
+                            <xs:complexType>
+                                <xs:attribute type="xs:string" name="exists" use="optional"/>
+                                <xs:attribute type="xs:string" name="test" use="optional"/>
+                                <xs:attribute type="xs:positiveInteger" name="random" use="optional"/>
+                                <xs:attribute type="xs:boolean" name="out" use="optional"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute type="xs:string" name="from" use="required"/>
+                    <xs:attribute type="xs:string" name="label" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="end-game">
+                <xs:complexType>
+                    <xs:attribute type="xs:string" name="winners" use="required" />
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="if">
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="true" minOccurs="0">
+                            <xs:complexType>
+                                <xs:choice maxOccurs="unbounded">
+                                    <xs:group ref="action" />
+                                </xs:choice>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="false" minOccurs="0">
+                            <xs:complexType>
+                                <xs:choice maxOccurs="unbounded">
+                                    <xs:group ref="action" />
+                                </xs:choice>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:all>
+                    <xs:attribute type="xs:string" name="test" use="optional"/>
+                    <xs:attribute type="xs:string" name="exists" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="assign-attribute">
+                <xs:complexType>
+                    <xs:attribute type="xs:string" name="attribute" use="required"/>
+                    <xs:attribute type="xs:string" name="value" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="give-turn">
+                <xs:complexType>
+                    <xs:attribute type="xs:string" name="to" use="required"/>
+                    <xs:attribute type="xs:string" name="turn" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="shuffle-collection">
+                <xs:complexType>
+                    <xs:attribute type="xs:string" name="collection" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="repeat">
+                <xs:complexType>
+                    <xs:choice maxOccurs="unbounded" minOccurs="1">
+                        <xs:group ref="action" />
+                    </xs:choice>
+                    <xs:attribute type="xs:string" name="test" use="optional" />
+                    <xs:attribute type="xs:string" name="exists" use="optional" />
+                    <xs:attribute type="xs:string" name="count" use="optional" />
+                    <xs:attribute type="xs:string" name="over" use="optional" />
+                    <xs:attribute type="xs:string" name="label" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="move-pieces">
+                <xs:complexType>
+                    <xs:attribute type="xs:string" name="pieces" use="required"/>
+                    <xs:attribute type="xs:string" name="to" use="required"/>
+                    <xs:attribute type="xs:boolean" name="copy" use="optional"/>
+                    <xs:attribute type="xs:string" name="count" use="optional" />
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="player-choice">
+                <xs:complexType mixed="true">
+                    <xs:sequence>
+                        <xs:element name="option" maxOccurs="unbounded" minOccurs="2">
+                            <xs:complexType>
+                                <xs:choice maxOccurs="unbounded" minOccurs="0">
+                                    <xs:group ref="action" />
+                                </xs:choice>
+                                <xs:attribute type="xs:string" name="value" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute type="xs:string" name="player" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="player-select">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="filter">
+                            <xs:complexType>
+                                <xs:attribute type="xs:string" name="exists" use="optional"/>
+                                <xs:attribute type="xs:string" name="test" use="optional"/>
+                                <xs:attribute type="xs:positiveInteger" name="random" use="optional"/>
+                                <xs:attribute type="xs:boolean" name="out" use="optional"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute type="xs:string" name="from" use="required"/>
+                    <xs:attribute type="xs:nonNegativeInteger" name="max" use="optional"/>
+                    <xs:attribute type="xs:nonNegativeInteger" name="min" use="optional"/>
+                    <xs:attribute type="xs:string" name="label" use="optional"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
+    </xs:group>
+    <xs:element name="game">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="pieces">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="piece" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="attribute" maxOccurs="unbounded" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:simpleContent>
+                                                    <xs:extension base="xs:string">
+                                                        <xs:attribute name="name" type="xs:string" use="required"/>
+                                                    </xs:extension>
+                                                </xs:simpleContent>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="relation" maxOccurs="unbounded" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:attribute type="xs:string" name="name" use="required"/>
+                                                <xs:attribute type="xs:string" name="to" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute type="xs:string" name="id" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="turns">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="turn" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute type="xs:string" name="id" use="required"/>
+                                    <xs:attribute type="xs:string" name="action" use="required"/>
+                                    <xs:attribute type="xs:boolean" name="initial" use="optional" />
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="actions">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="action" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:choice maxOccurs="unbounded" minOccurs="0">
+                                        <xs:element name="parameter">
+                                            <xs:complexType>
+                                                <xs:attribute type="xs:string" name="name" use="required"/>
+                                                <xs:attribute type="xs:string" name="default" use="optional"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:group ref="action" />
+                                    </xs:choice>
+                                    <xs:attribute type="xs:string" name="id" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="collections">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="collection" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="attribute" maxOccurs="unbounded" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:simpleContent>
+                                                    <xs:extension base="xs:string">
+                                                        <xs:attribute name="name" type="xs:string" use="required"/>
+                                                    </xs:extension>
+                                                </xs:simpleContent>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="visibility" maxOccurs="unbounded" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:attribute type="xs:string" name="item" use="required"/>
+                                                <xs:attribute type="xs:string" name="to" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute type="xs:string" name="id" use="required"/>
+                                    <xs:attribute type="xs:string" name="scope" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+            <xs:attribute type="xs:positiveInteger" name="min_players"/>
+            <xs:attribute type="xs:nonNegativeInteger" name="max_players"/>
+            <xs:attribute type="xs:string" name="name"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

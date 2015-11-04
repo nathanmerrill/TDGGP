@@ -2,6 +2,10 @@ from enum import Enum
 import copy
 
 
+class WonException(Exception):
+    pass
+
+
 class AccessError(Exception):
     pass
 
@@ -10,7 +14,6 @@ class GameObject:
     def __init__(self, name: str, has_attributes: bool):
         self.name = name
         self.attributes = {} if has_attributes else None
-        """:type: dict[str, selectorself.ValueSelector]"""
 
     def get_attribute(self, name):
         try:
@@ -30,7 +33,7 @@ class GameObject:
 
 class Game(GameObject):
     def __init__(self, name):
-        super(Game, self).__init__(name, False)
+        super(Game, self).__init__(name, True)
         self.collections = {}
         """:type: dict[str, Collection]"""
         self.player_collections = {}
@@ -54,8 +57,12 @@ class Game(GameObject):
         for name, collection in self.player_collections.items():
             for player in players:
                 player.collections[name] = copy.deepcopy(collection)
-
-        self.starting_turn.perform(players, game_state)
+        try:
+            import sys
+            sys.setrecursionlimit(1500)
+            self.starting_turn.perform(players, game_state)
+        except WonException:
+            print("Winners: "+str(game_state.winners))
 
     def __getitem__(self, item):
         if item == "collections":
@@ -136,8 +143,8 @@ class Collection(GameObject):
         self.filters = {
             "pieces": lambda s: s.pieces,
             "size": lambda s: [len(s.pieces)],
-            "first": lambda s: [s.pieces[-1]],
-            "last": lambda s: [s.pieces[0]],
+            "first": lambda s: [s.pieces[-1]] if s.pieces else [],
+            "last": lambda s: [s.pieces[0]] if s.pieces else [],
         }
 
     def __getitem__(self, item):
@@ -151,7 +158,10 @@ class Collection(GameObject):
         return super(Collection, self).__repr__()+str(self.pieces)
 
     def __deepcopy__(self, memo):
-        p = Piece(self.name, None)
+        p = Collection(self.name)
+        p.visible_top = self.visible_top
+        p.visible_all = self.visible_all
+        p.visible_count = self.visible_count
         p.attributes = copy.copy(self.attributes)
         return p
 
@@ -162,8 +172,6 @@ class Turn(GameObject):
         self.action = action
 
     def perform(self, players, game_state: GameState):
-        if game_state.winners is not None:
-            return
         players = sorted(players, key=lambda p: p.index)
         for player in players:
             game_state.set_player(player)
@@ -188,6 +196,8 @@ class Action(GameObject):
 
     def perform(self, game_state: GameState):
         for step in self.steps:
+            from Game.steps import Step
+            assert(isinstance(step, Step)), str(step)+" is not a step"
             step.perform(game_state)
 
 

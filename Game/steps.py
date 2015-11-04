@@ -1,7 +1,7 @@
 from enum import Enum
 from Game.selectors import Selector, ValueSelector
 from Game.tests import Test
-from Game.game import GameState
+from Game.game import GameState, Action
 import copy
 
 
@@ -15,28 +15,21 @@ class ActionStep(Step):
         self.action_selector = action_selector
 
     def perform(self, game_state: GameState):
-        for action in self.action_selector.select(game_state):
-            action.perform(game_state)
+        action = self.action_selector.select_one_of_type(game_state, Action)
+        action.perform(game_state)
 
 
 class TestStep(Step):
-    def __init__(self, test: Test, false_action_selector: Selector, true_action_selector: Selector):
+    def __init__(self, test: Test, true_action_selector: Selector, false_action_selector: Selector):
         self.test = test
         self.false = false_action_selector
         self.true = true_action_selector
 
     def perform(self, game_state: GameState):
-        selector = self.false if self.test.test(game_state) else self.true
+        selector = self.true if self.test.test(game_state) else self.false
         if selector is None:
             return
-        selection = selector.select(game_state)
-        for action in selection:
-            try:
-                action.perform(game_state)
-            except:
-                print("Selector: "+str(selector))
-                print("Selected: "+str(selection))
-                raise
+        selector.select_one_of_type(game_state, Action).perform(game_state)
 
 
 class WhileStep(Step):
@@ -45,9 +38,9 @@ class WhileStep(Step):
         self.action_selector = action_selector
 
     def perform(self, game_state: GameState):
+        action = self.action_selector.select_one_of_type(game_state, Action)
         while self.test.test(game_state):
-            for action in self.action_selector.select(game_state):
-                action.perform(game_state)
+            action.perform(game_state)
 
 
 class RepeatStep(Step):
@@ -57,11 +50,10 @@ class RepeatStep(Step):
         self.label = "count" if label is None else label
 
     def perform(self, game_state: GameState):
-        count = self.count.select(game_state)
-        assert(len(count) == 1)
-        for _ in range(int(count[0])):
-            for action in self.action_selector.select(game_state):
-                action.perform(game_state)
+        count = self.count.select_one_of_type(game_state, int)
+        action = self.action_selector.select_one_of_type(game_state, Action)
+        for _ in range(count):
+            action.perform(game_state)
 
 
 class ForEachStep(Step):
@@ -71,12 +63,10 @@ class ForEachStep(Step):
         self.label = "selected" if label is None else label
 
     def perform(self, game_state: GameState):
-        if str(self.selector) == "player:hand:pieces":
-            print("Pieces:"+str(self.selector.select(game_state)))
+        action = self.action_selector.select_one_of_type(game_state, Action)
         for piece in self.selector.select(game_state):
             game_state.set_var([piece], self.label)
-            for action in self.action_selector.select(game_state):
-                action.perform(game_state)
+            action.perform(game_state)
 
 
 class AssignAttributeStep(Step):
@@ -86,10 +76,9 @@ class AssignAttributeStep(Step):
         self.attribute_name = attribute_name
 
     def perform(self, game_state: GameState):
-        to_assign = self.assign_selector.select(game_state)
-        assert(len(to_assign) == 1)
-        attribute = to_assign[0]
+        attribute = self.assign_selector.select_one(game_state)
         for game_object in self.assign_to_selector.select(game_state):
+            assert(game_object.attributes is not None), str(game_object)+" does not have attributes to assign"
             game_object.attributes[self.attribute_name] = attribute
 
 
@@ -99,10 +88,10 @@ class GiveTurnStep(Step):
         self.players_selector = players_selector
 
     def perform(self, game_state: GameState):
-        turn = self.turn.select(game_state)
-        assert(len(turn) == 1)
-        game_state.turns.append(turn[0])
-        turn[0].perform(self.players_selector.select(game_state), game_state)
+        from Game.game import Turn
+        turn = self.turn.select_one_of_type(game_state, Turn)
+        game_state.turns.append(turn)
+        turn.perform(self.players_selector.select(game_state), game_state)
         game_state.turns.pop()
 
 
@@ -112,6 +101,8 @@ class EndGameStep(Step):
 
     def perform(self, game_state: GameState):
         game_state.winners = self.winners.select(game_state)
+        from Game.game import WonException
+        raise WonException()
 
 
 class Positions(Enum):
@@ -125,12 +116,12 @@ class MovePieces(Step):
         self.pieces = pieces
         self.to = to
         self.position = Positions.First if position is None else position
-        import Game.selectors
         self.count = count
         self.copy = copy is True
 
     def perform(self, game_state: GameState):
-        collection = self.to.select(game_state)[0]
+        from Game.game import Collection
+        collection = self.to.select_one_of_type(game_state, Collection)
         pieces = self.pieces.select(game_state)
         if not self.copy:
             pieces = self.pieces.select(game_state)
@@ -138,11 +129,10 @@ class MovePieces(Step):
                 pieces = pieces[:self.count.select(game_state)[0]]
             collections = set()
             for piece in pieces:
+                from Game.game import Piece
+                assert(type(piece) == Piece), str(self.pieces)+" did not return pieces, rather: "+str(type(piece))
                 collections.add(piece.parent)
             to_remove = set(pieces)
-
-            print("Moving "+str(self.pieces)+" to "+str(self.to))
-            print(self.pieces.select(game_state))
 
             for c in collections:
                 to_move = [piece for piece in c.pieces if piece not in to_remove]
@@ -189,21 +179,30 @@ class Select(Step):
             print("Selected: "+str(selected))
             raise
 
+    def __repr__(self):
+        return str(self.selector)+"["+", ".join(str(f) for f in self.filters)+"]"
+
 
 class PlayerSelect(Step):
     def __init__(self, select: Select, label: str=None, min_pieces: Selector=None, max_pieces: Selector=None):
         self.select = select
         self.min = ValueSelector(0) if min_pieces is None else min_pieces
-        self.max = ValueSelector(float("inf")) if max_pieces is None else max_pieces
+        self.max = ValueSelector(99999999) if max_pieces is None else max_pieces
         self.label = "selected" if label is None else label
 
     def perform(self, game_state: GameState):
         self.select.perform(game_state)
         selected = game_state.get_var(self.select.label)
+        real_max = self.max.select_one_of_type(game_state, int)
+        real_min = self.min.select_one_of_type(game_state, int)
+        assert(real_min <= real_max), "Min greater than max"
+        assert(real_min <= len(selected)), "Min greater than available options selected by "+str(self.select)
+        if real_max > len(selected):
+            real_max = len(selected)
         if selected:
-            real_max = min(len(selected), self.max.select(game_state)[0])
-            real_min = min(len(selected), self.min.select(game_state)[0])
             selected = game_state.player.select(selected, real_min, real_max, game_state, id(self))
+            assert(len(selected) <= real_max)
+            assert(len(selected) >= real_min)
         game_state.set_var(selected, self.label)
 
 
@@ -213,4 +212,5 @@ class PlayerChoice(Step):
 
     def perform(self, game_state: GameState):
         choice = game_state.player.select(list(self.options.keys()), 1, 1, game_state, id(self))
-        self.options[choice].perform(game_state)
+        assert(len(choice) == 1), "Can only select 1 choice"
+        self.options[choice[0]].perform(game_state)

@@ -10,18 +10,21 @@
             <attribute name="value">1</attribute>
             <attribute name="cost">0</attribute>
             <attribute name="base">true</attribute>
+            <attribute name="treasure">true</attribute>
         </piece>
         <piece id="card_silver">
             <attribute name="name">silver</attribute>
             <attribute name="value">2</attribute>
             <attribute name="cost">3</attribute>
             <attribute name="base">true</attribute>
+            <attribute name="treasure">true</attribute>
         </piece>
         <piece id="card_gold">
             <attribute name="name">gold</attribute>
             <attribute name="value">3</attribute>
             <attribute name="cost">6</attribute>
             <attribute name="base">true</attribute>
+            <attribute name="treasure">true</attribute>
         </piece>
         <piece id="card_curse">
             <attribute name="name">curse</attribute>
@@ -207,7 +210,7 @@
         </piece>
     </pieces>
     <turns>
-        <turn id="start_turn" initial="true" action="action_start_turn"/>
+        <turn id="start_turn" initial="true" action="action_start"/>
         <turn id="game_loop" action="action_game_loop"/>
         <turn id="council_room" action="action_council_room"/>
         <turn id="reaction" action="action_reaction"/>
@@ -220,14 +223,14 @@
     </turns>
     <actions>
         <action id="play_card">
-            <player-select from="player:hand:pieces" max="1">
+            <player-select from="player:hand:pieces" max="1" label="selectedCard">
                 <filter exists="@action"/>
             </player-select>
-            <if exists="$selected">
+            <if exists="$selectedCard">
                 <true>
                     <assign-attribute attribute="current_turn@actions" value="current_turn@actions - 1"/>
-                    <move-pieces pieces="$selected" to="player:played" />
-                    <perform action="$selected:action"/>
+                    <move-pieces pieces="$selectedCard" to="player:played" />
+                    <perform action="$selectedCard@action"/>
                     <if test="current_turn@actions > 0">
                         <true>
                             <perform action="action:play_card" />
@@ -258,7 +261,7 @@
             <select from="player:revealed" label="move_to" />
             <perform action="action:action_draw_card"/>
             <select from="player:revealed:first"/>
-            <if exists="$selected:treasure">
+            <if exists="$selected@treasure">
                 <true>
                     <move-pieces pieces="$selected" to="player:hand"/>
                 </true>
@@ -293,14 +296,14 @@
         <action id="action_card_cellar">
             <assign-attribute attribute="current_turn@actions" value="current_turn@actions + 1"/>
             <player-select from="player:hand"/>
-            <repeat over="$selected" label="loop">
+            <repeat over="$selected:pieces" label="loop">
                 <move-pieces pieces="$loop" to="player:discard"/>
                 <perform action="action:action_draw_card"/>
             </repeat>
         </action>
         <action id="action_card_chapel">
-            <player-select from="player:hand" max="4"/>
-            <move-pieces pieces="$selected" to="player:trash"/>
+            <player-select from="player:hand:pieces" max="4"/>
+            <move-pieces pieces="$selected" to="game:trash"/>
         </action>
         <action id="action_card_moat">
             <select from="2" label="count" />
@@ -324,19 +327,19 @@
             <assign-attribute attribute="current_turn@buys" value="current_turn@buys + 1"/>
         </action>
         <action id="action_card_workshop">
-            <player-select from="game" max="1" min="1">
+            <player-select from="game:collections" max="1" min="1">
                 <filter exists="@reserve"/>
                 <filter test=":first@cost &lt;= 4"/>
             </player-select>
             <move-pieces pieces="$selected:first" to="player:discard"/>
         </action>
         <action id="action_card_bureaucrat">
-            <select from="game">
+            <select from="game:collections">
                 <filter exists="@reserve"/>
                 <filter test=":first@name = 'silver'"/>
             </select>
             <move-pieces pieces="$selected:first" to="player:deck"/>
-            <select from="turn:bureaucrat_attack" label="count" />
+            <select from="turn:bureaucrat_attack" label="turn" />
             <perform action="action:action_attack"/>
         </action>
         <action id="action_card_feast">
@@ -353,7 +356,7 @@
             <perform action="action:action_attack"/>
         </action>
         <action id="action_card_moneylender">
-            <player-select from="player:hand" max="1">
+            <player-select from="player:hand:pieces" max="1">
                 <filter test="@name = 'copper'"/>
             </player-select>
             <if exists="$selected">
@@ -364,11 +367,12 @@
             </if>
         </action>
         <action id="action_card_remodel">
-            <player-select from="player:hand" max="1" label="remodeled"/>
+            <player-select from="player:hand:pieces" max="1" label="remodeled"/>
             <if exists="$remodeled">
                 <true>
-                    <player-select from="game:collection" max="1" min="1">
-                        <filter test=":first@cost &lt;= $remodeled:cost + 2"/>
+                    <player-select from="game:collections" max="1" min="1">
+                        <filter exists="@reserve" />
+                        <filter test=":first@cost &lt;= $remodeled@cost + 2"/>
                     </player-select>
                     <move-pieces pieces="$remodeled" to="game:trash"/>
                     <move-pieces pieces="$selected:first" to="player:discard"/>
@@ -401,12 +405,19 @@
             <perform action="action:action_attack"/>
         </action>
         <action id="action_card_throne_room">
-            <player-select from="player:hand:pieces" min="1" max="1"/>
-            <move-pieces pieces="$selected" to="player:played"/>
-            <if exists="$selected">
+            <select from="player:hand:pieces" label="availableCards">
+                <filter exists="@action" />
+            </select>
+            <if exists="$availableCards">
                 <true>
-                    <perform action="action:$selected:action"/>
-                    <perform action="action:$selected:action"/>
+                    <player-select from="$availableCards" min="1" max="1" label="throned"/>
+                    <move-pieces pieces="$throned" to="player:played"/>
+                    <if exists="$throned">
+                        <true>
+                            <perform action="$throned@action"/>
+                            <perform action="$throned@action"/>
+                        </true>
+                    </if>
                 </true>
             </if>
         </action>
@@ -450,12 +461,13 @@
             <player-select from="player:deck:pieces" label="mined">
                 <filter test="@treasure = 'true'"/>
             </player-select>
-            <player-select from="game:reserve">
+            <player-select from="game:collections">
+                <filter exists="@reserve" />
                 <filter test=":first@treasure = 'true'"/>
                 <filter test=":first@value &lt;= $mined:value + 3"/>
             </player-select>
             <move-pieces pieces="$mined" to="game:trash"/>
-            <move-pieces pieces="$selected" to="player:deck:hand"/>
+            <move-pieces pieces="$selected:pieces" to="player:hand"/>
         </action>
         <action id="action_card_witch">
             <perform action="action:action_draw_card"/>
@@ -472,7 +484,7 @@
         <action id="reaction_card_moat">
             <assign-attribute attribute="player@prevent_attack" value="true"/>
         </action>
-        <action id="action_start_turn">
+        <action id="action_start">
             <select from="pieces" label="cards">
                 <filter exists="@base" out="true"/>
                 <filter random="10" />
@@ -564,7 +576,7 @@
                 <filter exists="@reserve"/>
                 <filter test=":size=0"/>
             </select>
-            <if test="$empty_decks:count &lt; 3">
+            <if test="$empty_decks:count &gt; 2">
                 <true>
                     <perform action="action:find_winner" />
                 </true>
@@ -595,7 +607,7 @@
         </action>
         <action id="find_winner">
             <give-turn to="players" turn="turn:clean_up" />
-            <select from="0" label="max" />
+            <select from="-9999" label="max" />
             <repeat over="players" label="player">
                 <if test="$player@total_points > $max">
                     <true>
@@ -615,7 +627,9 @@
             <player-select from="player:hand:pieces">
                 <filter exists="@reaction"/>
             </player-select>
-            <perform action="action:$selected:reaction"/>
+            <repeat over="$selected" label="reaction">
+                <perform action="$reaction@reaction" />
+            </repeat>
         </action>
         <action id="action_bureaucrat_attack">
             <select from="player:hand:pieces">
@@ -623,9 +637,7 @@
             </select>
             <if exists="$selected">
                 <true>
-                    <player-select from="$selected" max="1" min="1">
-                        <filter exists="@victory"/>
-                    </player-select>
+                    <player-select from="$selected" max="1" min="1" />
                     <move-pieces pieces="$selected" to="player:hand"/>
                 </true>
             </if>
@@ -639,7 +651,7 @@
             <select from="player:revealed" label="move_to" />
             <perform action="action:action_draw_card" />
             <select from="player:revealed:first"/>
-            <player-choice player="game:attacker">
+            <player-choice player="game@attacker">
                 <option value="discard">
                     <move-pieces pieces="$selected" to="player:discard"/>
                 </option>
@@ -655,7 +667,7 @@
             <player-select from="player:revealed:pieces" min="1" max="1"/>
             <player-choice>
                 <option value="keep">
-                    <move-pieces pieces="$selected" to="game:attacker:discard"/>
+                    <move-pieces pieces="$selected" to="game@attacker:discard"/>
                 </option>
                 <option value="trash">
                     <move-pieces pieces="$selected" to="game:trash"/>
@@ -664,7 +676,8 @@
             <move-pieces pieces="player:revealed:pieces" to="player:discard"/>
         </action>
         <action id="action_witch_attack">
-            <select from="game:reserve">
+            <select from="game">
+                <filter exists="@reserve" />
                 <filter test=":first@name = curse"/>
             </select>
             <move-pieces pieces="$selected:first" to="player:discard"/>
@@ -673,10 +686,9 @@
     <collections>
         <collection id="discard" scope="player">
             <visibility item="top" to="public"/>
-        </collection>
-        <collection id="deck" scope="player">
             <visibility item="count" to="owner"/>
         </collection>
+        <collection id="deck" scope="player" />
         <collection id="hand" scope="player">
             <visibility item="all" to="owner"/>
             <visibility item="count" to="public"/>

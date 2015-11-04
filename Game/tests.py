@@ -22,22 +22,15 @@ class TestComparison(Test):
         self.obj2 = obj2
 
     def test(self, game_state):
+        if str(self) == "$card@points=garden":
+            print("Hi")
         left = self.obj1.select(game_state)
         right = self.obj2.select(game_state)
-        assert(len(left) == 1)
-        assert(len(right) == 1)
-        try:
-            return self.comparison(left[0], right[0])
-        except:
-
-            print([parent.get_attribute(self.obj1.attribute_name)
-                  for parent in self.obj1.parent.select(game_state)
-                  if parent.has_attribute(self.obj1.attribute_name)])
-            print(type(self.obj1))
-            print(self.obj1.select(game_state))
-            print(self.obj1.parent.select(game_state))
-            print(left[0])
-            raise
+        if len(left) == 0 or len(right) == 0:
+            return False
+        assert(len(left) == 1), str(self.obj1) + " returned "+str(len(left))+" objects: " + str(left)
+        assert(len(right) == 1), str(self.obj2) + " returned "+str(len(left))+" objects: " + str(right)
+        return self.comparison(left[0], right[0])
 
     def __repr__(self):
         return str(self.obj1)+str(self.comparison)+str(self.obj2)

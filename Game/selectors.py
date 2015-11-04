@@ -12,6 +12,17 @@ class Selector:
     def select(self, game_state: GameState) -> list:
         pass
 
+    def select_one(self, game_state: GameState):
+        item = self.select(game_state)
+        assert(len(item) == 1), str(self)+" selected "+str(len(item))+" items"
+        return item[0]
+
+    def select_one_of_type(self, game_state: GameState, item_type):
+        item = self.select_one(game_state)
+        assert(isinstance(item, item_type)), \
+            str(self) + " selected item of type " + str(type(item)) + " instead of " + str(item_type)
+        return item
+
 
 class OperatorSelector(Selector):
     def __init__(self, left: Selector, op: operator, right: Selector):
@@ -21,17 +32,13 @@ class OperatorSelector(Selector):
         self.str = op
 
     def select(self, game_state: GameState):
-        try:
-            assert(len(self.left.select(game_state)) == 1)
-            assert(len(self.right.select(game_state)) == 1)
-            assert(type(self.right.select(game_state)[0]) == int)
-            assert(type(self.left.select(game_state)[0]) == int)
-            return [self.operator(self.left.select(game_state)[0], self.right.select(game_state)[0])]
-        except:
-            print("Test: "+str(self))
-            print("Left: "+str(self.left.select(game_state)))
-            print("Right: "+str(self.right.select(game_state)))
-            raise
+        left_selected = self.left.select_one(game_state)
+        right_selected = self.right.select_one(game_state)
+        assert(type(left_selected) == type(right_selected)), \
+            str(self.left) + " did not match type with "+str(self.right) \
+            + ": " + str(type(left_selected)) + " vs " + str(type(right_selected)) \
+            + " Left value: "+str(left_selected)+" Right value: "+str(right_selected)
+        return [self.operator(left_selected, right_selected)]
 
     def __repr__(self):
         return str(self.left) + self.str + str(self.right)
@@ -82,6 +89,7 @@ class SizeSelector(Selector):
 class ContextSelector(Selector):
     def __init__(self, context_name: str, parent: Selector):
         self.context_name = context_name
+        assert(self.context_name[0] not in ("$", ":", "@"))
         self.parent = parent
 
     def select(self, game_state: GameState):

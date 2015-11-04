@@ -66,8 +66,7 @@ def add_pieces(element: Element, game: game_models.Game):
                     related = game.turns[related_name]
                 else:
                     raise BadGameXML("Relation doesn't exist", relation)
-                game.pieces[piece.attrib["id"]].attributes[relation.attrib["name"]] = \
-                    selector_models.ValueSelector(related)
+                game.pieces[piece.attrib["id"]].attributes[relation.attrib["name"]] = related
 
 
 def add_turns(element: Element, game: game_models.Game):
@@ -161,7 +160,7 @@ def parse_give_turn(element: Element):
 
 
 def parse_player_choice(element: Element):
-    return dict([(child.attrib["value"], create_action(child)) for child in element])
+    return step_models.PlayerChoice(dict([(child.attrib["value"], create_action(child)) for child in element]))
 
 
 def parse_shuffle_collection(element: Element):
@@ -299,29 +298,34 @@ def parse_selector(string):
         return None
     if string == "":
         return selector_models.SelectedSelector()
+    if string == "false":
+        return selector_models.ValueSelector(False)
+    if string == "true":
+        return selector_models.ValueSelector(True)
+    try:
+        return selector_models.ValueSelector(int(string))
+    except ValueError:
+        pass
     string = str(string).strip()
     if string.endswith("'"):
         end_str_index = string.rfind("'", 0, -1)
         if end_str_index == -1:
             raise BadAttribute("String not closed")
-        return selector_models.ValueSelector(string[1:end_str_index])
+        return selector_models.ValueSelector(string[end_str_index+1:-1])
     for operator in selector_models.operators:
         if operator in string:
             index = string.rfind(operator)
             return selector_models.OperatorSelector(parse_selector(string[:index]),
                                                     operator,
                                                     parse_selector(string[index+1:]))
-    if "@" in string:
-        index = string.rfind("@")
-        return selector_models.AttributeSelector(string[index+1:], parse_selector(string[:index]))
-    elif ":" in string:
-        index = string.rfind(":")
+    at_index = string.rfind("@")
+    col_index = string.rfind(":")
+    if at_index > col_index:
+        return selector_models.AttributeSelector(string[at_index+1:], parse_selector(string[:at_index]))
+    elif col_index > at_index:
         if string.endswith(":count"):
-            return selector_models.SizeSelector(parse_selector(string[:index]))
-        return selector_models.ContextSelector(string[index+1:], parse_selector(string[:index]))
+            return selector_models.SizeSelector(parse_selector(string[:col_index]))
+        return selector_models.ContextSelector(string[col_index+1:], parse_selector(string[:col_index]))
     elif string.startswith("$"):
         return selector_models.VariableSelector(string[1:])
-    try:
-        return selector_models.ValueSelector(int(string))
-    except ValueError:
-        return selector_models.ScopeSelector(string)
+    return selector_models.ScopeSelector(string)

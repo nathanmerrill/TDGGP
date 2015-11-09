@@ -1,20 +1,20 @@
-from Game import parser, players
+from Game import parser, manualplayer, learningplayer, randomplayer
 import click
 
 player_types = {
-    'Human': players.ManualPlayer,
-    'Random': players.RandomPlayer
+    'Human': manualplayer.ManualPlayer,
+    'Random': randomplayer.RandomPlayer,
+    'Learning': learningplayer.LearningPlayer,
 }
 
 
 @click.command()
 @click.option("--game_path", prompt="Game Path", help="Path to the game's XML")
-@click.option("--num_players", prompt="Num Players", help="Number of players to play with")
-@click.option("--player_type", prompt="Player Type", help="Type of players to play with.  Allowed options: " +
-                                                          ", ".join(player_types.keys()))
-def start(game_path, num_players, player_type):
+@click.option("--players", prompt="Num Players", help="Comma delimited list of players to play with. Allowed types: " +
+                                                      ",".join(player_types.keys()))
+def start(game_path, players):
     game = parser.parse_xml(game_path)
-    all_players = list(map(player_types[player_type], range(int(num_players))))
+    all_players = [player_types[player](index) for index, player in enumerate(players.split(","))]
     game.start(all_players)
 
 if __name__ == '__main__':

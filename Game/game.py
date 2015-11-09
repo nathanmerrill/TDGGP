@@ -80,15 +80,15 @@ class GameState:
         self.selected = None
         self.turns = []
         self.scopes = {
-            "game": lambda: [self.game],
-            "player": lambda: [self.player],
-            "players": lambda: self.game.players,
-            "opponents": lambda: [a for a in self.game.players if a is not self.player],
-            "pieces": lambda: list(self.game.pieces.values()),
-            "piece": lambda: [NamedSet(self.game.pieces)],
-            "turn": lambda: [NamedSet(self.game.turns)],
-            "action": lambda: [NamedSet(self.game.actions)],
-            "current_turn": lambda: [self.turns[-1]]
+            "game": lambda s: [s.game],
+            "player": lambda s: [s.player],
+            "players": lambda s: s.game.players,
+            "opponents": lambda s: [a for a in s.game.players if a is not s.player],
+            "pieces": lambda s: list(s.game.pieces.values()),
+            "piece": lambda s: [NamedSet(s.game.pieces)],
+            "turn": lambda s: [NamedSet(s.game.turns)],
+            "action": lambda s: [NamedSet(s.game.actions)],
+            "current_turn": lambda s: [s.turns[-1]]
         }
         self.winners = None
 
@@ -110,7 +110,7 @@ class GameState:
 
     def get_scopes(self, scope):
         try:
-            return self.scopes[scope]()
+            return self.scopes[scope](self)
         except KeyError:
             raise AccessError("No such scope: '"+scope+"'")
 
@@ -173,9 +173,11 @@ class Turn(GameObject):
 
     def perform(self, players, game_state: GameState):
         players = sorted(players, key=lambda p: p.index)
+        old_player = game_state.player
         for player in players:
             game_state.set_player(player)
             self.action.perform(game_state)
+        game_state.set_player(old_player)
 
 
 class Piece(GameObject):

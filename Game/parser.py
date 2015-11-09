@@ -236,9 +236,9 @@ def parse_filter(element: Element):
 def parse_player_select(element: Element):
     selector = parse_select(element)
     selector = step_models.PlayerSelect(selector,
-                                        element.attrib.get("label"),
                                         parse_selector(element.attrib.get("min")),
-                                        parse_selector(element.attrib.get("max")))
+                                        parse_selector(element.attrib.get("max")),
+                                        parse_selector(element.attrib.get("player")))
     return selector
 
 

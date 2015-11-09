@@ -39,6 +39,7 @@
             <attribute name="cost">2</attribute>
             <attribute name="points">1</attribute>
             <attribute name="base">true</attribute>
+            <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_duchy">
             <attribute name="name">duchy</attribute>
@@ -46,6 +47,7 @@
             <attribute name="cost">5</attribute>
             <attribute name="points">3</attribute>
             <attribute name="base">true</attribute>
+            <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_province">
             <attribute name="name">province</attribute>
@@ -53,12 +55,14 @@
             <attribute name="cost">8</attribute>
             <attribute name="points">6</attribute>
             <attribute name="base">true</attribute>
+            <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_gardens">
             <attribute name="name">gardens</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <attribute name="points">garden</attribute>
+            <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_cellar">
             <attribute name="name">cellar</attribute>
@@ -83,7 +87,6 @@
             <attribute name="name">chancellor</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">3</attribute>
-            <attribute name="attack">true</attribute>
             <relation name="action" to="action_card_chancellor"/>
         </piece>
         <piece id="card_village">
@@ -259,6 +262,7 @@
         </action>
         <action id="action_find_treasure">
             <select from="player:revealed" label="move_to" />
+            <select from="1" label="count" />
             <perform action="action:action_draw_card"/>
             <select from="player:revealed:first"/>
             <if exists="$selected@treasure">
@@ -272,9 +276,10 @@
         </action>
         <action id="action_attack">
             <assign-attribute attribute="game@attacker" value="player"/>
+            <assign-attribute attribute="opponent@prevent_attack" value="'false'" />
             <give-turn to="opponents" turn="turn:reaction"/>
             <select from="opponents">
-                <filter exists="@prevent_attack"/>
+                <filter out="true" test="@prevent_attack = 'true'"/>
             </select>
             <give-turn to="$selected" turn="$turn"/>
         </action>
@@ -298,15 +303,18 @@
             <player-select from="player:hand"/>
             <repeat over="$selected:pieces" label="loop">
                 <move-pieces pieces="$loop" to="player:discard"/>
+                <select from="player:hand" label="move_to" />
+                <select from="1" label="count" />
                 <perform action="action:action_draw_card"/>
             </repeat>
         </action>
         <action id="action_card_chapel">
-            <player-select from="player:hand:pieces" max="4"/>
+            <player-select from="player:hand:pieces" min="0" max="4"/>
             <move-pieces pieces="$selected" to="game:trash"/>
         </action>
         <action id="action_card_moat">
             <select from="2" label="count" />
+            <select from="player:hand" label="move_to" />
             <perform action="action:action_draw_card"/>
         </action>
         <action id="action_card_chancellor">
@@ -320,6 +328,8 @@
         </action>
         <action id="action_card_village">
             <assign-attribute attribute="current_turn@actions" value="current_turn@actions + 2"/>
+            <select from="player:hand" label="move_to" />
+            <select from="1" label="count" />
             <perform action="action:action_draw_card"/>
         </action>
         <action id="action_card_woodcutter">
@@ -381,12 +391,16 @@
         </action>
         <action id="action_card_smithy">
             <select from="3" label="count" />
+            <select from="player:hand" label="move_to" />
             <perform action="action:action_draw_card"/>
         </action>
         <action id="action_card_spy">
             <assign-attribute attribute="current_turn@actions" value="current_turn@actions + 1"/>
+            <select from="player:hand" label="move_to" />
+            <select from="1" label="count" />
             <perform action="action:action_draw_card"/>
             <select from="player:revealed" label="move_to" />
+            <select from="1" label="count" />
             <perform action="action:action_draw_card"/>
             <select from="player:revealed:first"/>
             <player-choice>
@@ -423,6 +437,7 @@
         </action>
         <action id="action_card_council_room">
             <select from="4" label="count" />
+            <select from="player:hand" label="move_to" />
             <perform action="action:action_draw_card" />
             <assign-attribute attribute="current_turn@buys" value="current_turn@buys + 1"/>
             <give-turn to="opponents" turn="turn:council_room"/>
@@ -434,12 +449,14 @@
         </action>
         <action id="action_card_laboratory">
             <select from="2" label="count" />
+            <select from="player:hand" label="move_to" />
             <perform action="action:action_draw_card"/>
             <assign-attribute attribute="current_turn@actions" value="current_turn@actions + 1"/>
         </action>
         <action id="action_card_library">
             <repeat test="player:hand:size &lt; 7">
                 <select from="player:revealed" label="move_to" />
+                <select from="1" label="count" />
                 <perform action="action:action_draw_card" />
                 <player-choice>
                     <option value="keep">
@@ -452,6 +469,8 @@
             <move-pieces pieces="player:revealed:pieces" to="player:discard"/>
         </action>
         <action id="action_card_market">
+            <select from="1" label="count" />
+            <select from="player:hand" label="move_to" />
             <perform action="action:action_draw_card"/>
             <assign-attribute attribute="current_turn@buys" value="current_turn@buys + 1"/>
             <assign-attribute attribute="current_turn@treasure" value="current_turn@treasure + 1"/>
@@ -459,18 +478,19 @@
         </action>
         <action id="action_card_mine">
             <player-select from="player:deck:pieces" label="mined">
-                <filter test="@treasure = 'true'"/>
+                <filter exists="@treasure"/>
             </player-select>
             <player-select from="game:collections">
                 <filter exists="@reserve" />
-                <filter test=":first@treasure = 'true'"/>
-                <filter test=":first@value &lt;= $mined:value + 3"/>
+                <filter exists=":first@treasure"/>
+                <filter test=":first@value &lt;= $mined@value + 3"/>
             </player-select>
             <move-pieces pieces="$mined" to="game:trash"/>
             <move-pieces pieces="$selected:pieces" to="player:hand"/>
         </action>
         <action id="action_card_witch">
-            <perform action="action:action_draw_card"/>
+            <select from="2" label="count" />
+            <select from="player:hand" label="move_to" />
             <perform action="action:action_draw_card"/>
             <select from="turn:witch_attack" label="turn" />
             <perform action="action:action_attack"/>
@@ -621,6 +641,8 @@
             <end-game winners="$winners" />
         </action>
         <action id="action_council_room">
+            <select from="1" label="count" />
+            <select from="player:hand" label="move_to" />
             <perform action="action:action_draw_card"/>
         </action>
         <action id="action_reaction">
@@ -649,6 +671,7 @@
         </action>
         <action id="action_spy_attack">
             <select from="player:revealed" label="move_to" />
+            <select from="1" label="count" />
             <perform action="action:action_draw_card" />
             <select from="player:revealed:first"/>
             <player-choice player="game@attacker">
@@ -662,10 +685,12 @@
         </action>
         <action id="action_thief_attack">
             <select from="player:revealed" label="move_to" />
+            <select from="2" label="count" />
             <perform action="action:action_draw_card" />
-            <perform action="action:action_draw_card" />
-            <player-select from="player:revealed:pieces" min="1" max="1"/>
-            <player-choice>
+            <player-select from="player:revealed:pieces" min="1" max="1">
+                <filter exists="@treasure" />
+            </player-select>
+            <player-choice player="$player">
                 <option value="keep">
                     <move-pieces pieces="$selected" to="game@attacker:discard"/>
                 </option>
@@ -685,12 +710,16 @@
     </actions>
     <collections>
         <collection id="discard" scope="player">
+            <visibility item="all" to="public"/>
             <visibility item="top" to="public"/>
             <visibility item="count" to="owner"/>
         </collection>
-        <collection id="deck" scope="player" />
+        <collection id="deck" scope="player">
+            <visibility item="all" to="public"/>
+        </collection>
         <collection id="hand" scope="player">
-            <visibility item="all" to="owner"/>
+            <visibility item="all" to="public"/>
+            <!-- <visibility item="all" to="owner"/> -->
             <visibility item="count" to="public"/>
         </collection>
         <collection id="revealed" scope="player">

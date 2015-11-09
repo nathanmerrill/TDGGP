@@ -184,11 +184,12 @@ class Select(Step):
 
 
 class PlayerSelect(Step):
-    def __init__(self, select: Select, label: str=None, min_pieces: Selector=None, max_pieces: Selector=None):
+    def __init__(self, select: Select, min_pieces: Selector=None, max_pieces: Selector=None, player: Selector=None):
         self.select = select
         self.min = ValueSelector(0) if min_pieces is None else min_pieces
         self.max = ValueSelector(99999999) if max_pieces is None else max_pieces
-        self.label = "selected" if label is None else label
+        from Game.selectors import ScopeSelector
+        self.player = ScopeSelector("player") if player is None else player
 
     def perform(self, game_state: GameState):
         self.select.perform(game_state)
@@ -200,10 +201,12 @@ class PlayerSelect(Step):
         if real_max > len(selected):
             real_max = len(selected)
         if selected:
-            selected = game_state.player.select(selected, real_min, real_max, game_state, id(self))
+            from Game.game import Player
+            player = self.player.select_one_of_type(game_state, Player)
+            selected = player.select(selected, real_min, real_max, game_state, id(self))
             assert(len(selected) <= real_max)
             assert(len(selected) >= real_min)
-        game_state.set_var(selected, self.label)
+        game_state.set_var(selected, self.select.label)
 
 
 class PlayerChoice(Step):

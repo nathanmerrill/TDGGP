@@ -11,6 +11,7 @@ class ManualPlayer(Player):
                 print("Select "+str(min_choices if min_choices else 1)+" of the following:")
             else:
                 print("Select "+str(min_choices if min_choices else 1)+" to "+str(max_choices)+" of the following:")
+            print(game_object_str(game_state.turns[-1]))
             print("\t-1: Print game state")
             if min_choices == 0:
                 print("\t0: None")
@@ -63,6 +64,7 @@ def print_obj(obj, game_state):
 
 def game_str(game, game_state):
     string = game_object_str(game)
+    string += "\n\t" + game_object_str(game_state.turns[-1])
     for collection in game.collections.values():
         string += tabify_str(collection_str(collection, game_state))
     for player in game.players:
@@ -101,9 +103,3 @@ def is_visible(visibility, collection, game_state):
 def game_object_str(obj):
     return obj.name + ("["+", ".join(key+"="+str(val) for key, val in
                                      sorted(obj.attributes.items(), key=lambda k: k[0]))+"]" if obj.attributes else "")
-
-
-class RandomPlayer(Player):
-    def select(self, choices: list, min_choices: int, max_choices: int, *args):
-        import random
-        return random.sample(choices, random.randint(min_choices, max_choices))

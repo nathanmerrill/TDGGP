@@ -13,9 +13,15 @@ player_types = {
 @click.option("--players", prompt="Num Players", help="Comma delimited list of players to play with. Allowed types: " +
                                                       ",".join(player_types.keys()))
 def start(game_path, players):
-    game = parser.parse_xml(game_path)
     all_players = [player_types[player](index) for index, player in enumerate(players.split(","))]
-    game.start(all_players)
+    run_game(game_path, all_players)
+
+
+def run_game(game_path, players):
+    game = parser.parse_xml(game_path)
+    game.start(players)
+    return game
+
 
 if __name__ == '__main__':
     start()

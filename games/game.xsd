@@ -87,6 +87,11 @@
                     <xs:attribute type="xs:string" name="count" use="optional" />
                 </xs:complexType>
             </xs:element>
+            <xs:element name="remove">
+                <xs:complexType>
+                    <xs:attribute type="xs:string" name="label" use="required" />
+                </xs:complexType>
+            </xs:element>
             <xs:element name="player-choice">
                 <xs:complexType mixed="true">
                     <xs:sequence>
@@ -115,8 +120,8 @@
                         </xs:element>
                     </xs:sequence>
                     <xs:attribute type="xs:string" name="from" use="required"/>
-                    <xs:attribute type="xs:nonNegativeInteger" name="max" use="optional"/>
-                    <xs:attribute type="xs:nonNegativeInteger" name="min" use="optional"/>
+                    <xs:attribute type="xs:string" name="max" use="optional"/>
+                    <xs:attribute type="xs:string" name="min" use="optional"/>
                     <xs:attribute type="xs:string" name="label" use="optional"/>
                 </xs:complexType>
             </xs:element>

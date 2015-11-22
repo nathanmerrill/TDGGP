@@ -55,6 +55,9 @@ class ValueSelector(Selector):
     def __repr__(self):
         return str(self.value)
 
+    def get_type(self, game_state):
+        return type(self.value)
+
 
 class AttributeSelector(Selector):
     def __init__(self, attribute_name: str, parent: Selector):
@@ -107,12 +110,33 @@ class ContextSelector(Selector):
         return str(self.parent)+":"+self.context_name
 
 
+class NamedSet:
+    def __init__(self, items: dict):
+        self.items = items
+
+    def __getitem__(self, item):
+        return [self.items[item]]
+
+scopes = {
+    "game": lambda s: [s.game],
+    "player": lambda s: [s.player],
+    "players": lambda s: s.game.players,
+    "opponents": lambda s: [a for a in s.game.players if a is not s.player],
+    "pieces": lambda s: list(s.game.pieces.values()),
+    "piece": lambda s: [NamedSet(s.game.pieces)],
+    "turn": lambda s: [NamedSet(s.game.turns)],
+    "action": lambda s: [NamedSet(s.game.actions)],
+    "current_turn": lambda s: [s.turns[-1]]
+}
+
+
 class ScopeSelector(Selector):
+
     def __init__(self, scope: str):
         self.scope = scope
 
     def select(self, game_state: GameState):
-        return game_state.get_scopes(self.scope)
+        return scopes[self.scope](game_state)
 
     def __repr__(self):
         return self.scope

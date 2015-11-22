@@ -1,5 +1,5 @@
 from lxml import etree as ET
-from xml.etree.ElementTree import Element
+from lxml import etree as Element
 from Game import game as game_models, \
     tests as test_models, \
     selectors as selector_models, \
@@ -119,8 +119,7 @@ def create_action(element: Element):
     if "id" in element.attrib:
         name = element.attrib["id"]
     else:
-        import random
-        name = str(random.randrange(100000))
+        name = str(element.sourceline)
         for parent in element.iterancestors():
             if "id" in parent.attrib:
                 name += parent.attrib["id"]
@@ -141,6 +140,7 @@ def parse_step(element: Element):
         "player-choice": parse_player_choice,
         "give-turn": parse_give_turn,
         "end-game": parse_end_game,
+        "remove": parse_remove,
     }
     if element.tag not in actions:
         raise BadGameXML("Invalid tag:<"+element.tag+">", element)
@@ -151,32 +151,39 @@ def parse_step(element: Element):
     return action
 
 
+def parse_remove(element: Element):
+    return step_models.RemoveStep(element.attrib["label"], element.sourceline)
+
+
 def parse_end_game(element: Element):
-    return step_models.EndGameStep(parse_selector(element.attrib["winners"]))
+    return step_models.EndGameStep(parse_selector(element.attrib["winners"]), element.sourceline)
 
 
 def parse_give_turn(element: Element):
-    return step_models.GiveTurnStep(parse_selector(element.attrib["to"]), parse_selector(element.attrib["turn"]))
+    return step_models.GiveTurnStep(parse_selector(element.attrib["to"]),
+                                    parse_selector(element.attrib["turn"]),
+                                    element.sourceline)
 
 
 def parse_player_choice(element: Element):
-    return step_models.PlayerChoice(dict([(child.attrib["value"], create_action(child)) for child in element]))
+    return step_models.PlayerChoice(dict([(child.attrib["value"], create_action(child)) for child in element]),
+                                    element.sourceline)
 
 
 def parse_shuffle_collection(element: Element):
-    return step_models.ShuffleCollection(parse_selector(element.attrib["collection"]))
+    return step_models.ShuffleCollection(parse_selector(element.attrib["collection"]), element.sourceline)
 
 
 def parse_perform(element: Element):
     action = parse_selector(element.attrib["action"])
-    return step_models.ActionStep(action)
+    return step_models.ActionStep(action, element.sourceline)
 
 
 def parse_assign_attribute(element: Element):
     attribute_on, attribute_name = str(element.attrib["attribute"]).rsplit("@", 1)
     attribute_on = parse_selector(attribute_on)
     value = parse_selector(element.attrib["value"])
-    return step_models.AssignAttributeStep(attribute_on, value, attribute_name)
+    return step_models.AssignAttributeStep(attribute_on, value, attribute_name, element.sourceline)
 
 
 def parse_repeat(element: Element):
@@ -185,15 +192,15 @@ def parse_repeat(element: Element):
     action_selector = selector_models.ValueSelector(action)
     if "over" in element.attrib:
         over = parse_selector(element.attrib["over"])
-        repeat = step_models.ForEachStep(over, action_selector, label)
+        repeat = step_models.ForEachStep(over, action_selector, label, element.sourceline)
     elif "test" in element.attrib or "exists" in element.attrib:
         test = parse_comparison(element.attrib["test"]) \
             if "test" in element.attrib \
             else parse_exists(element.attrib["exists"])
-        repeat = step_models.WhileStep(test, action_selector)
+        repeat = step_models.WhileStep(test, action_selector, element.sourceline)
     elif "count" in element.attrib:
         count = parse_selector(element.attrib["count"])
-        repeat = step_models.RepeatStep(count, action_selector, label)
+        repeat = step_models.RepeatStep(count, action_selector, label, element.sourceline)
     else:
         raise BadGameXML("Repeat has no attribute to repeat over", element)
     return repeat
@@ -205,7 +212,7 @@ def parse_move_pieces(element: Element):
     copy = element.attrib.get("copy") == 'true'
     count = parse_selector(element.attrib["count"]) if "count" in element.attrib else None
     position = step_models.Positions[element.attrib.get("position")] if "position" in element.attrib else None
-    return step_models.MovePieces(pieces, to, position, count, copy)
+    return step_models.MovePieces(pieces, to, position, count, copy, element.sourceline)
 
 
 def parse_select(element: Element):
@@ -216,7 +223,7 @@ def parse_select(element: Element):
         filters.append(parse_filter(child))
     items = parse_selector(element.attrib["from"])
 
-    return step_models.Select(items, filters, element.get("label"))
+    return step_models.Select(items, filters, element.get("label"), element.sourceline)
 
 
 def parse_filter(element: Element):
@@ -238,7 +245,8 @@ def parse_player_select(element: Element):
     selector = step_models.PlayerSelect(selector,
                                         parse_selector(element.attrib.get("min")),
                                         parse_selector(element.attrib.get("max")),
-                                        parse_selector(element.attrib.get("player")))
+                                        parse_selector(element.attrib.get("player")),
+                                        element.sourceline)
     return selector
 
 
@@ -264,7 +272,7 @@ def parse_if(element: Element):
         false = selector_models.ValueSelector(false) if false is not None else None
         parser = parse_comparison(element.attrib['test']) if "test" in element.attrib \
             else parse_exists(element.attrib['exists'])
-        return step_models.TestStep(parser, true, false)
+        return step_models.TestStep(parser, true, false, element.sourceline)
     except BadAttribute as e:
         raise BadGameXML("Exception thrown", element) from e
 

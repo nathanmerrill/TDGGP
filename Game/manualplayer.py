@@ -85,19 +85,16 @@ def player_str(player, game_state):
 
 def collection_str(collection, game_state):
     string = game_object_str(collection)
-    if is_visible(collection.visible_count, collection, game_state):
+    if collection.count_visible(game_state):
         string += " Count: "+str(len(collection.pieces))
-    if is_visible(collection.visible_all, collection, game_state):
+    if collection.all_visible(game_state):
         if len(collection.pieces):
             string += "\n\t"+"\n\t".join(game_object_str(piece) for piece in collection.pieces)
-    elif is_visible(collection.visible_top, collection, game_state) and len(collection.pieces):
+    elif collection.top_visible(game_state) and len(collection.pieces):
         string += " Top: "+game_object_str(collection.pieces[0])
     return string
 
 
-def is_visible(visibility, collection, game_state):
-    return visibility == Visibility.Player or visibility == Visibility.Public or \
-           (visibility == Visibility.Owner and collection in game_state.player.collections.values())
 
 
 def game_object_str(obj):

@@ -22,8 +22,6 @@ class TestComparison(Test):
         self.obj2 = obj2
 
     def test(self, game_state):
-        if str(self) == "$card@points=garden":
-            print("Hi")
         left = self.obj1.select(game_state)
         right = self.obj2.select(game_state)
         if len(left) == 0 or len(right) == 0:

@@ -15,13 +15,13 @@ class GameObject:
         self.name = name
         self.attributes = {} if has_attributes else None
 
-    def get_attribute(self, name):
+    def get_attribute(self, name: str):
         try:
             return self.attributes[name]
         except Exception as e:
             raise AccessError(str(self)+" does not have attribute '"+name+"'", e)
 
-    def set_attribute(self, name, item):
+    def set_attribute(self, name: str, item):
         self.attributes[name] = item
 
     def has_attribute(self, name):
@@ -50,19 +50,29 @@ class Game(GameObject):
         """:type: Turn"""
         self.players = []
         """:type: list[Player]"""
+        self.state = GameState(self)
 
-    def start(self, players: list):
+    def assign_players(self, players: list):
         self.players = players
-        game_state = GameState(self)
         for name, collection in self.player_collections.items():
             for player in players:
                 player.collections[name] = copy.deepcopy(collection)
+
+    def start(self, players: list):
+        if players:
+            self.assign_players(players)
         try:
             import sys
             sys.setrecursionlimit(1500)
-            self.starting_turn.perform(players, game_state)
+            self.starting_turn.perform([self.players[0]], self.state)
         except WonException:
-            print("Winners: "+str(game_state.winners))
+            pass
+        for player in players:
+            if player in self.state.winners:
+                player.won()
+            else:
+                player.lost()
+        return self.state.winners
 
     def __getitem__(self, item):
         if item == "collections":
@@ -79,18 +89,8 @@ class GameState:
         """:type: dict[list[GameObject]]"""
         self.selected = None
         self.turns = []
-        self.scopes = {
-            "game": lambda s: [s.game],
-            "player": lambda s: [s.player],
-            "players": lambda s: s.game.players,
-            "opponents": lambda s: [a for a in s.game.players if a is not s.player],
-            "pieces": lambda s: list(s.game.pieces.values()),
-            "piece": lambda s: [NamedSet(s.game.pieces)],
-            "turn": lambda s: [NamedSet(s.game.turns)],
-            "action": lambda s: [NamedSet(s.game.actions)],
-            "current_turn": lambda s: [s.turns[-1]]
-        }
-        self.winners = None
+
+        self.winners = []
 
     def set_player(self, player):
         self.player = player
@@ -105,22 +105,12 @@ class GameState:
     def get_selected(self):
         return self.selected
 
+    def del_var(self, var):
+        if var in self.vars:
+            del self.vars[var]
+
     def set_selected(self, selected):
         self.selected = selected
-
-    def get_scopes(self, scope):
-        try:
-            return self.scopes[scope](self)
-        except KeyError:
-            raise AccessError("No such scope: '"+scope+"'")
-
-
-class NamedSet:
-    def __init__(self, items: dict):
-        self.items = items
-
-    def __getitem__(self, item):
-        return [self.items[item]]
 
 
 class Visibility(Enum):
@@ -165,6 +155,19 @@ class Collection(GameObject):
         p.attributes = copy.copy(self.attributes)
         return p
 
+    def is_visible(self, visibility: Visibility, game_state: GameState):
+        return visibility == Visibility.Player or visibility == Visibility.Public or \
+               (visibility == Visibility.Owner and self in game_state.player.collections.values())
+
+    def top_visible(self, game_state: GameState):
+        return self.is_visible(self.visible_top, game_state)
+
+    def all_visible(self, game_state: GameState):
+        return self.is_visible(self.visible_all, game_state)
+
+    def count_visible(self, game_state: GameState):
+        return self.is_visible(self.visible_count, game_state)
+
 
 class Turn(GameObject):
     def __init__(self, name, action):
@@ -195,11 +198,11 @@ class Action(GameObject):
     def __init__(self, steps, name):
         super(Action, self).__init__(name, False)
         self.steps = steps
+        from Game.steps import Step
+        assert(all(isinstance(step, Step) for step in steps))
 
     def perform(self, game_state: GameState):
         for step in self.steps:
-            from Game.steps import Step
-            assert(isinstance(step, Step)), str(step)+" is not a step"
             step.perform(game_state)
 
 
@@ -219,3 +222,9 @@ class Player(GameObject):
 
     def __repr__(self):
         return "Player "+str(self.index)
+
+    def won(self):
+        pass
+
+    def lost(self):
+        pass

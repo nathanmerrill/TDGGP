@@ -6,35 +6,30 @@
       xsi:noNamespaceSchemaLocation="game.xsd">
     <pieces>
         <piece id="card_copper">
-            <attribute name="name">copper</attribute>
             <attribute name="value">1</attribute>
             <attribute name="cost">0</attribute>
             <attribute name="base">true</attribute>
             <attribute name="treasure">true</attribute>
         </piece>
         <piece id="card_silver">
-            <attribute name="name">silver</attribute>
             <attribute name="value">2</attribute>
             <attribute name="cost">3</attribute>
             <attribute name="base">true</attribute>
             <attribute name="treasure">true</attribute>
         </piece>
         <piece id="card_gold">
-            <attribute name="name">gold</attribute>
             <attribute name="value">3</attribute>
             <attribute name="cost">6</attribute>
             <attribute name="base">true</attribute>
             <attribute name="treasure">true</attribute>
         </piece>
         <piece id="card_curse">
-            <attribute name="name">curse</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">0</attribute>
             <attribute name="points">-1</attribute>
             <attribute name="base">true</attribute>
         </piece>
         <piece id="card_estate">
-            <attribute name="name">estate</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">2</attribute>
             <attribute name="points">1</attribute>
@@ -42,7 +37,6 @@
             <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_duchy">
-            <attribute name="name">duchy</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <attribute name="points">3</attribute>
@@ -50,7 +44,6 @@
             <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_province">
-            <attribute name="name">province</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">8</attribute>
             <attribute name="points">6</attribute>
@@ -58,155 +51,130 @@
             <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_gardens">
-            <attribute name="name">gardens</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <attribute name="points">garden</attribute>
             <attribute name="victory">true</attribute>
         </piece>
         <piece id="card_cellar">
-            <attribute name="name">cellar</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">2</attribute>
             <relation name="action" to="action_card_cellar"/>
         </piece>
         <piece id="card_chapel">
-            <attribute name="name">chapel</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">2</attribute>
             <relation name="action" to="action_card_chapel"/>
         </piece>
         <piece id="card_moat">
-            <attribute name="name">moat</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">2</attribute>
             <relation name="action" to="action_card_moat"/>
             <relation name="reaction" to="reaction_card_moat"/>
         </piece>
         <piece id="card_chancellor">
-            <attribute name="name">chancellor</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">3</attribute>
             <relation name="action" to="action_card_chancellor"/>
         </piece>
         <piece id="card_village">
-            <attribute name="name">village</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">3</attribute>
             <relation name="action" to="action_card_village"/>
         </piece>
         <piece id="card_woodcutter">
-            <attribute name="name">woodcutter</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">3</attribute>
             <relation name="action" to="action_card_woodcutter"/>
         </piece>
         <piece id="card_workshop">
-            <attribute name="name">workshop</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">3</attribute>
             <relation name="action" to="action_card_workshop"/>
         </piece>
         <piece id="card_bureaucrat">
-            <attribute name="name">bureaucrat</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <attribute name="attack">true</attribute>
             <relation name="action" to="action_card_bureaucrat"/>
         </piece>
         <piece id="card_feast">
-            <attribute name="name">feast</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <relation name="action" to="action_card_feast"/>
         </piece>
         <piece id="card_militia">
-            <attribute name="name">militia</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <attribute name="attack">true</attribute>
             <relation name="action" to="action_card_militia"/>
         </piece>
         <piece id="card_moneylender">
-            <attribute name="name">moneylender</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <relation name="action" to="action_card_moneylender"/>
         </piece>
         <piece id="card_remodel">
-            <attribute name="name">remodel</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <relation name="action" to="action_card_remodel"/>
         </piece>
         <piece id="card_smithy">
-            <attribute name="name">smithy</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <relation name="action" to="action_card_smithy"/>
         </piece>
         <piece id="card_spy">
-            <attribute name="name">spy</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <relation name="action" to="action_card_spy"/>
         </piece>
         <piece id="card_thief">
-            <attribute name="name">thief</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <relation name="action" to="action_card_thief"/>
         </piece>
         <piece id="card_throne_room">
-            <attribute name="name">throne_room</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">4</attribute>
             <relation name="action" to="action_card_throne_room"/>
         </piece>
         <piece id="card_council_room">
-            <attribute name="name">council_room</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <relation name="action" to="action_card_council_room"/>
         </piece>
         <piece id="card_festival">
-            <attribute name="name">festival</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <relation name="action" to="action_card_festival"/>
         </piece>
         <piece id="card_laboratory">
-            <attribute name="name">laboratory</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <relation name="action" to="action_card_laboratory"/>
         </piece>
         <piece id="card_library">
-            <attribute name="name">library</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <relation name="action" to="action_card_library"/>
         </piece>
         <piece id="card_market">
-            <attribute name="name">market</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <relation name="action" to="action_card_market"/>
         </piece>
         <piece id="card_mine">
-            <attribute name="name">mine</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <relation name="action" to="action_card_mine"/>
         </piece>
         <piece id="card_witch">
-            <attribute name="name">witch</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">5</attribute>
             <relation name="action" to="action_card_witch"/>
         </piece>
         <piece id="card_adventurer">
-            <attribute name="name">adventurer</attribute>
             <attribute name="value">0</attribute>
             <attribute name="cost">6</attribute>
             <relation name="action" to="action_card_adventurer"/>
@@ -243,15 +211,13 @@
             </if>
         </action>
         <action id="buy_card">
-            <player-select from="game:collections" max="1">
-                <filter exists="@reserve" />
-                <filter test=":first@cost &lt;= current_turn@treasure" />
-            </player-select>
-            <if exists="$selected">
+            <select from="current_turn@treasure" label="max_cost" />
+            <remove label="purchased" />
+            <perform action="action:card_from_reserve" />
+            <if exists="$purchased">
                 <true>
                     <assign-attribute attribute="current_turn@buys" value="current_turn@buys - 1" />
-                    <assign-attribute attribute="current_turn@treasure" value="current_turn@treasure - $selected:first@cost" />
-                    <move-pieces pieces="$selected:first" to="player:discard" />
+                    <assign-attribute attribute="current_turn@treasure" value="current_turn@treasure - player:discard:first@cost" />
                     <if test="current_turn@buys > 0">
                         <true>
                             <perform action="action:buy_card" />
@@ -276,7 +242,7 @@
         </action>
         <action id="action_attack">
             <assign-attribute attribute="game@attacker" value="player"/>
-            <assign-attribute attribute="opponent@prevent_attack" value="'false'" />
+            <assign-attribute attribute="opponents@prevent_attack" value="'false'" />
             <give-turn to="opponents" turn="turn:reaction"/>
             <select from="opponents">
                 <filter out="true" test="@prevent_attack = 'true'"/>
@@ -297,6 +263,17 @@
                     </true>
                 </if>
             </repeat>
+        </action>
+        <action id="card_from_reserve">
+            <player-select from="game:collections" max="1" label="purchased">
+                <filter exists="@reserve" />
+                <filter test=":first@cost &lt;= $max_cost" />
+            </player-select>
+            <if exists="$purchased">
+                <true>
+                    <move-pieces pieces="$purchased:first" to="player:discard" />
+                </true>
+            </if>
         </action>
         <action id="action_card_cellar">
             <assign-attribute attribute="current_turn@actions" value="current_turn@actions + 1"/>
@@ -337,16 +314,13 @@
             <assign-attribute attribute="current_turn@buys" value="current_turn@buys + 1"/>
         </action>
         <action id="action_card_workshop">
-            <player-select from="game:collections" max="1" min="1">
-                <filter exists="@reserve"/>
-                <filter test=":first@cost &lt;= 4"/>
-            </player-select>
-            <move-pieces pieces="$selected:first" to="player:discard"/>
+            <select from="4" label="max_cost" />
+            <perform action="action:card_from_reserve" />
         </action>
         <action id="action_card_bureaucrat">
             <select from="game:collections">
                 <filter exists="@reserve"/>
-                <filter test=":first@name = 'silver'"/>
+                <filter test=":first@value = 2"/>
             </select>
             <move-pieces pieces="$selected:first" to="player:deck"/>
             <select from="turn:bureaucrat_attack" label="turn" />
@@ -354,11 +328,8 @@
         </action>
         <action id="action_card_feast">
             <move-pieces pieces="player:played:first" to="game:trash"/>
-            <player-select from="game:collections" max="1" min="1">
-                <filter exists="@reserve"/>
-                <filter test=":first@cost &lt;= 5"/>
-            </player-select>
-            <move-pieces pieces="$selected:first" to="player:hand"/>
+            <select from="5" label="max_cost" />
+            <perform action="action:card_from_reserve" />
         </action>
         <action id="action_card_militia">
             <assign-attribute attribute="current_turn@treasure" value="current_turn@treasure + 2"/>
@@ -367,7 +338,7 @@
         </action>
         <action id="action_card_moneylender">
             <player-select from="player:hand:pieces" max="1">
-                <filter test="@name = 'copper'"/>
+                <filter test="@value = 1"/>
             </player-select>
             <if exists="$selected">
                 <true>
@@ -380,12 +351,9 @@
             <player-select from="player:hand:pieces" max="1" label="remodeled"/>
             <if exists="$remodeled">
                 <true>
-                    <player-select from="game:collections" max="1" min="1">
-                        <filter exists="@reserve" />
-                        <filter test=":first@cost &lt;= $remodeled@cost + 2"/>
-                    </player-select>
+                    <select from="$remodeled@cost + 2" label="max_cost" />
+                    <perform action="action:card_from_reserve" />
                     <move-pieces pieces="$remodeled" to="game:trash"/>
-                    <move-pieces pieces="$selected:first" to="player:discard"/>
                 </true>
             </if>
         </action>
@@ -477,16 +445,20 @@
             <assign-attribute attribute="current_turn@actions" value="current_turn@actions + 1"/>
         </action>
         <action id="action_card_mine">
-            <player-select from="player:deck:pieces" label="mined">
+            <player-select from="player:deck:pieces" label="mined" max="1">
                 <filter exists="@treasure"/>
             </player-select>
-            <player-select from="game:collections">
-                <filter exists="@reserve" />
-                <filter exists=":first@treasure"/>
-                <filter test=":first@value &lt;= $mined@value + 3"/>
-            </player-select>
-            <move-pieces pieces="$mined" to="game:trash"/>
-            <move-pieces pieces="$selected:pieces" to="player:hand"/>
+            <if exists="$mined">
+                <true>
+                    <player-select from="game:collections" max="1" min="1">
+                        <filter exists="@reserve" />
+                        <filter exists=":first@treasure"/>
+                        <filter test=":first@value &lt;= $mined@value + 3"/>
+                    </player-select>
+                    <move-pieces pieces="$mined" to="game:trash"/>
+                    <move-pieces pieces="$selected:pieces" to="player:hand"/>
+                </true>
+            </if>
         </action>
         <action id="action_card_witch">
             <select from="2" label="count" />
@@ -569,7 +541,7 @@
                          to="game:curse_reserve"
                          copy="true"
                          count="10*players:count-1"/>
-            <repeat test="1=1">
+            <repeat test="player:hand:size > 1">
                 <give-turn to="players" turn="turn:game_loop"/>
             </repeat>
         </action>
@@ -665,7 +637,15 @@
             </if>
         </action>
         <action id="action_militia_attack">
-            <player-select from="player:hand:pieces" max="3" min="3"/>
+            <if test="player:hand:size &lt; 3">
+                <true>
+                    <select from="player:hand:size" label="minPieces" />
+                </true>
+                <false>
+                    <select from="3" label="minPieces" />
+                </false>
+            </if>
+            <player-select from="player:hand:pieces" min="$minPieces" max="3"/>
             <move-pieces pieces="player:hand:pieces" to="player:discard"/>
             <move-pieces pieces="$selected" to="player:hand"/>
         </action>
@@ -687,23 +667,28 @@
             <select from="player:revealed" label="move_to" />
             <select from="2" label="count" />
             <perform action="action:action_draw_card" />
-            <player-select from="player:revealed:pieces" min="1" max="1">
+            <select from="player:revealed:pieces" label="treasure">
                 <filter exists="@treasure" />
-            </player-select>
-            <player-choice player="$player">
-                <option value="keep">
-                    <move-pieces pieces="$selected" to="game@attacker:discard"/>
-                </option>
-                <option value="trash">
-                    <move-pieces pieces="$selected" to="game:trash"/>
-                </option>
-            </player-choice>
+            </select>
+            <if exists="$treasure">
+                <true>
+                    <player-select from="$treasure" min="1" max="1" label="chosen" />
+                    <player-choice player="$player">
+                        <option value="keep">
+                            <move-pieces pieces="$chosen" to="game@attacker:discard"/>
+                        </option>
+                        <option value="trash">
+                            <move-pieces pieces="$chosen" to="game:trash"/>
+                        </option>
+                    </player-choice>
+                </true>
+            </if>
             <move-pieces pieces="player:revealed:pieces" to="player:discard"/>
         </action>
         <action id="action_witch_attack">
             <select from="game">
                 <filter exists="@reserve" />
-                <filter test=":first@name = curse"/>
+                <filter test=":first@points = 0-1"/>
             </select>
             <move-pieces pieces="$selected:first" to="player:discard"/>
         </action>

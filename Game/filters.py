@@ -1,4 +1,5 @@
 from Game.game import GameState
+import random
 
 
 class Filter:
@@ -38,9 +39,13 @@ class RandomFilter(Filter):
     def __init__(self, count):
         self.count = count
 
-    def filter(self, selected, game_state):
-        import random
-        return list(random.sample(selected, self.count))
+    def filter(self, selected, game_state: GameState):
+        try:
+            return list(random.sample(selected, self.count))
+        except ValueError:
+            for collection in game_state.game.collections.values():
+                print(collection)
+            raise
 
     def __repr__(self):
         return "Random("+str(self.count)+")"

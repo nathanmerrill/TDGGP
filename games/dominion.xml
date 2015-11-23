@@ -695,16 +695,12 @@
     </actions>
     <collections>
         <collection id="discard" scope="player">
-            <visibility item="all" to="public"/>
             <visibility item="top" to="public"/>
             <visibility item="count" to="owner"/>
         </collection>
-        <collection id="deck" scope="player">
-            <visibility item="all" to="public"/>
-        </collection>
+        <collection id="deck" scope="player" />
         <collection id="hand" scope="player">
-            <visibility item="all" to="public"/>
-            <!-- <visibility item="all" to="owner"/> -->
+            <visibility item="all" to="owner"/>
             <visibility item="count" to="public"/>
         </collection>
         <collection id="revealed" scope="player">

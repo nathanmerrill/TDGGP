@@ -115,7 +115,7 @@ class LearningPlayer(Player):
     def won(self) -> None:
         self.update_network(1)
 
-    def loss(self) -> None:
+    def lost(self) -> None:
         self.update_network(0)
 
 
@@ -443,22 +443,25 @@ def learn_game(game_path: str, num_iterations: int, refresh: bool):
     players = [
         LearningPlayer(0, input_mapper, output_mapper, scorer, chooser),
         LearningPlayer(1, input_mapper, output_mapper, scorer, chooser)
-        #randomplayer.RandomPlayer(1)
     ]
     wins = 0
     losses = 0
+
+    def save():
+        save_mapper(input_mapper_path, input_mapper)
+        save_mapper(output_mapper_path, output_mapper)
+        chooser.save(chooser_path)
+        scorer.save(scorer_path)
     for i in range(int(num_iterations)):
         print("Game "+str(i))
         winners = parser.parse_xml(game_path).start(players)
         wins += int(all(isinstance(winner, LearningPlayer) for winner in winners))
         losses += int(not(any(isinstance(winner, LearningPlayer) for winner in winners)))
-    print("Wins: "+str(wins))
-    print("Losses: "+str(losses))
-    save_mapper(input_mapper_path, input_mapper)
-    save_mapper(output_mapper_path, output_mapper)
-    chooser.save(chooser_path)
-    scorer.save(scorer_path)
-
+        if i % 100 == 0:
+            save()
+    print("Winners:"+str(wins))
+    print("Losers:"+str(losses))
+    save()
 
 
 if __name__ == '__main__':

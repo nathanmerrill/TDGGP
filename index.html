@@ -27,6 +27,22 @@
 <p>My program is able to read games in XML format (The XML must follow the included game.xsd grammar).  You can run the game by running <code>start.py</code> It will then allow you to select the players (human, random, or AI), at which point, it will run the game.  The AI needs training to learn how to play well.  To train the AI, run <code>learningplayer.py</code>.</p>
 
 <p>A sample game, Dominion, has been included, and is described in <code>dominion.py</code>.</p>
+<h3>Capabilities:</h3>
+  <ul>
+    <li>Capable of playing non-deterministic games with hidden state.  Doesn't cheat to win.</li>
+    <li>Able to learn different types of choices (For example, Ticket to ride has "Select turn action", "Select ticket", and "Draw card" choices).</li>
+    <li>Capable of handling choices with different options available each time, and choices that allow selecting multiple options.</li>
+    <li>Relatively fast runtime.  Random players can finish a game in about 5 seconds, AI players can finish a game in about 20 (On my computer)</li>
+    <li>After 3,000 training games, wins against a random player about 80% of the time in Dominion (a quite complex game)</li>
+  </ul>
+  <h3>Limitations</h3>
+  <ul>
+    <li>Doesn't learn deterministic games as fast, because the AI usually selects the same moves for all players while training.</li>
+    <li>Can't handle choices that are not enumerable (For example, Monopoly bidding on properties)</li>
+    <li>Plays position-dependent games poorly (For example, in chess, two positions can be very similar, but have drastic differences in actual power)</li>
+    <li>Plays hidden-state-depending games poorly (For example, the AI doesn't try to guess your hand in Poker)</li>
+    <li>AI currently doesn't take into account recent moves players have taken (In risk, if my opponent just moved armies closer to me, he is likely attacking)</li>
+  </ul>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/nathanmerrill/TDGGP">Temporal Difference General Game Player</a> is maintained by <a href="https://github.com/nathanmerrill">nathanmerrill</a>.</span>

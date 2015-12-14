@@ -43,6 +43,20 @@
     <li>Plays hidden-state-depending games poorly (For example, the AI doesn't try to guess your hand in Poker)</li>
     <li>AI currently doesn't take into account recent moves players have taken (In risk, if my opponent just moved armies closer to me, he is likely attacking)</li>
   </ul>
+  <h3>Methods</h3>
+  <p>My learning player uses Temporal Difference learning (more specifically, Q-Learning).  This algorithm uses 2 Neural Networks:  The first ranks the current state of the game, and the second ranks each of the choices available to it.  It then takes one of the choices, and updates both neural networks based on the state it ended up in.</p>
+  <p>The XML file that describes a game defines 4 different parts of a game: Pieces (such as cards, tokens), Collections (places to put your pieces), Actions(something a player does), and Turns(something many players do).</p>
+  <h4>Pieces</h4>
+  <p>Pieces have a <i>name</i> and children elements defining their attributes.  Attributes have a name, such as <i>color</i>, and can either be a static value (<i>red</i>), or point to another object</p>
+  <h4>Collections</h4>
+  <p>Collections also have a <i>name</i> and attributes. They also can contain visibility modifiers, defining who can see their contents, and what contents they can see (the first piece, all of the pieces, the count of the pieces)</p>
+  <h4>Actions</h4>
+  <p>Actions are made up of a series of steps.  Steps include <i>move-pieces</i>, <i>set-attribute</i>, <i>if</i>, and <i>loop</i>.</p>
+  <h4>Turns</h4>
+  <p>Turns point to a single action, and allow a series of players to perform an action in order.  A turn can also store an attribute, allowing you to store temporary values</p>
+  
+  
+  
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/nathanmerrill/TDGGP">Temporal Difference General Game Player</a> is maintained by <a href="https://github.com/nathanmerrill">nathanmerrill</a>.</span>

@@ -55,6 +55,21 @@
   <h4>Turns</h4>
   <p>Turns point to a single action, and allow a series of players to perform an action in order.  A turn can also store an attribute, allowing you to store temporary values</p>
   
+  <h3>Selectors</h3>
+  <p>Selectors are the powerhouse behind the game.  Each Step contains selectors which defines how that step is to be performed. For example, the <i>move-pieces</i> step accepts three selectors: One that determines which pieces to move, one that determines where to move the pieces, and one that determines the number of pieces to move.</p>
+  <p>Selectors can either select a game object (a card in my hand, my opponents), a game object prototype (a card type, an action, the game itself), or a literal value (numbers, strings, boolean).  Game objects and their prototypes have attributes, can be filtered based on their contents, or attributes, and can be passed into different functions (such as <i>random</i> or <i>count</i>)</p>
+  <p>The following are some sample selectors:
+  <ul>
+    <li><i>game:deck:pieces</i> selects the pieces in the global collection named deck</li>
+    <li><i>opponents:hand:pieces[@color='Red']</i> selects all of the pieces in your opponent's hands with a color attribute of Red </li>
+    <li><i>$turnsLeft &lt; 4</i> returns a test that tests if the turnsLeft variable is less than 4</i></li>
+    <li><i>current_turn@actions</i> returns the current turn's action attribute</li>
+    <li><i>first(game:collections[@reserve]:pieces)[@treasure][@value <= $mined@value + 3]</i> (I actually use this one, have fun deciphering it)</li>
+  </ul>
+  </p>
+  <p>To parse/tokenize my selectors I use <a href="http://pyparsing.wikispaces.com/?responseToken=fa0fe316be5a765216843aeed532bb9d">Pyparsing</a>, and then I put the tokens into Selector classes I've built.</p>
+  
+  
   <h3>Results</h3>
   <p>Because Dominion is such a complex game, learning such a game takes a long time.  After 1 million iterations, a 91% success rate against a random player has been achived.  A graph showing the increase in learning can be found on <a href="https://plot.ly/~thenameipicked/24/td-learning-success-rate-against-random-player-in-dominion/?share_key=TgONQkK2D0291YKZQeQng0">Plot.ly</a></p>
   

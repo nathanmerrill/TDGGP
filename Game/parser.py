@@ -5,6 +5,7 @@ from Game import game as game_models, \
     selectors as selector_models, \
     filters as filter_models, \
     steps as step_models
+from Game import selectorparser
 __author__ = 'Nathan Merrill'
 
 
@@ -156,12 +157,12 @@ def parse_remove(element: Element):
 
 
 def parse_end_game(element: Element):
-    return step_models.EndGameStep(parse_selector(element.attrib["winners"]), element.sourceline)
+    return step_models.EndGameStep(selectorparser.parse(element.attrib["winners"], selectorparser.player), element.sourceline)
 
 
 def parse_give_turn(element: Element):
-    return step_models.GiveTurnStep(parse_selector(element.attrib["to"]),
-                                    parse_selector(element.attrib["turn"]),
+    return step_models.GiveTurnStep(selectorparser.parse(element.attrib["to"], selectorparser.player),
+                                    selectorparser.parse(element.attrib["turn"], selectorparser.turn),
                                     element.sourceline)
 
 
@@ -171,19 +172,20 @@ def parse_player_choice(element: Element):
 
 
 def parse_shuffle_collection(element: Element):
-    return step_models.ShuffleCollection(parse_selector(element.attrib["collection"]), element.sourceline)
+    return step_models.ShuffleCollection(selectorparser.parse(element.attrib["collection"], selectorparser.collection), element.sourceline)
 
 
 def parse_perform(element: Element):
-    action = parse_selector(element.attrib["action"])
+    action = selectorparser.parse(element.attrib["action"], selectorparser.action)
     return step_models.ActionStep(action, element.sourceline)
 
 
 def parse_assign_attribute(element: Element):
-    attribute_on, attribute_name = str(element.attrib["attribute"]).rsplit("@", 1)
-    attribute_on = parse_selector(attribute_on)
-    value = parse_selector(element.attrib["value"])
-    return step_models.AssignAttributeStep(attribute_on, value, attribute_name, element.sourceline)
+    parts = selectorparser.attribute.parseString(element.attrib["attribute"])
+    attr_name = parts[-1]
+    attr = selectorparser.to_selector(parts[:-2])
+    value = selectorparser.parse(element.attrib["value"], selectorparser.item)
+    return step_models.AssignAttributeStep(attr, value, attr_name, element.sourceline)
 
 
 def parse_repeat(element: Element):
@@ -191,7 +193,7 @@ def parse_repeat(element: Element):
     action = create_action(element)
     action_selector = selector_models.ValueSelector(action)
     if "over" in element.attrib:
-        over = parse_selector(element.attrib["over"])
+        over = selectorparser.parse(element.attrib["over"], selectorparser.item)
         repeat = step_models.ForEachStep(over, action_selector, label, element.sourceline)
     elif "test" in element.attrib or "exists" in element.attrib:
         test = parse_comparison(element.attrib["test"]) \
@@ -199,7 +201,7 @@ def parse_repeat(element: Element):
             else parse_exists(element.attrib["exists"])
         repeat = step_models.WhileStep(test, action_selector, element.sourceline)
     elif "count" in element.attrib:
-        count = parse_selector(element.attrib["count"])
+        count = selectorparser.parse(element.attrib["count"], selectorparser.numeric)
         repeat = step_models.RepeatStep(count, action_selector, label, element.sourceline)
     else:
         raise BadGameXML("Repeat has no attribute to repeat over", element)
@@ -207,23 +209,16 @@ def parse_repeat(element: Element):
 
 
 def parse_move_pieces(element: Element):
-    pieces = parse_selector(element.attrib['pieces'])
-    to = parse_selector(element.attrib['to'])
+    pieces = selectorparser.parse(element.attrib['pieces'], selectorparser.piece)
+    to = selectorparser.parse(element.attrib['to'], selectorparser.collection)
     copy = element.attrib.get("copy") == 'true'
-    count = parse_selector(element.attrib["count"]) if "count" in element.attrib else None
+    count = selectorparser.parse(element.attrib["count"], selectorparser.numeric) if "count" in element.attrib else None
     position = step_models.Positions[element.attrib.get("position")] if "position" in element.attrib else None
     return step_models.MovePieces(pieces, to, position, count, copy, element.sourceline)
 
 
 def parse_select(element: Element):
-    filters = []
-    for child in element:
-        if child.tag != 'filter':
-            raise BadGameXML("Only filter allowed as child of select", element)
-        filters.append(parse_filter(child))
-    items = parse_selector(element.attrib["from"])
-
-    return step_models.Select(items, filters, element.get("label"), element.sourceline)
+    return step_models.Select(selectorparser.parse(element.attrib["from"], selectorparser.item), element.get("label"), element.sourceline)
 
 
 def parse_filter(element: Element):
@@ -243,9 +238,9 @@ def parse_filter(element: Element):
 def parse_player_select(element: Element):
     selector = parse_select(element)
     selector = step_models.PlayerSelect(selector,
-                                        parse_selector(element.attrib.get("min")),
-                                        parse_selector(element.attrib.get("max")),
-                                        parse_selector(element.attrib.get("player")),
+                                        selectorparser.parse(element.attrib.get("min"), selectorparser.numeric),
+                                        selectorparser.parse(element.attrib.get("max"), selectorparser.numeric),
+                                        selectorparser.parse(element.attrib.get("player"), selectorparser.player),
                                         element.sourceline)
     return selector
 
@@ -278,62 +273,8 @@ def parse_if(element: Element):
 
 
 def parse_comparison(test_str):
-    test_str = test_str.strip()
-    split_symbol = None
-    for symbol in sorted(list(test_models.comparisons.keys()), key=lambda a: -len(a)):
-        if symbol in test_str:
-            if split_symbol is not None:
-                if symbol not in split_symbol:
-                    raise BadAttribute("'test' attribute contains two comparisons, "+split_symbol+" and "+symbol)
-            else:
-                split_symbol = symbol
-    if split_symbol is None:
-        raise BadAttribute("Invalid 'test' attribute")
-    args = test_str.split(split_symbol)
-    if len(args) != 2:
-        raise BadAttribute("Invalid 'test' attribute")
-    return test_models.TestComparison(parse_selector(args[0]),
-                                      test_models.comparisons[split_symbol],
-                                      parse_selector(args[1]))
+    return selectorparser.to_test(selectorparser.test.parseString(test_str))
 
 
-def parse_exists(string):
-    return test_models.TestExists(parse_selector(string))
-
-
-def parse_selector(string):
-    if string is None:
-        return None
-    if string == "":
-        return selector_models.SelectedSelector()
-    if string == "false":
-        return selector_models.ValueSelector(False)
-    if string == "true":
-        return selector_models.ValueSelector(True)
-    try:
-        return selector_models.ValueSelector(int(string))
-    except ValueError:
-        pass
-    string = str(string).strip()
-    if string.endswith("'"):
-        end_str_index = string.rfind("'", 0, -1)
-        if end_str_index == -1:
-            raise BadAttribute("String not closed")
-        return selector_models.ValueSelector(string[end_str_index+1:-1])
-    for operator in selector_models.operators:
-        if operator in string:
-            index = string.rfind(operator)
-            return selector_models.OperatorSelector(parse_selector(string[:index]),
-                                                    operator,
-                                                    parse_selector(string[index+1:]))
-    at_index = string.rfind("@")
-    col_index = string.rfind(":")
-    if at_index > col_index:
-        return selector_models.AttributeSelector(string[at_index+1:], parse_selector(string[:at_index]))
-    elif col_index > at_index:
-        if string.endswith(":count"):
-            return selector_models.SizeSelector(parse_selector(string[:col_index]))
-        return selector_models.ContextSelector(string[col_index+1:], parse_selector(string[:col_index]))
-    elif string.startswith("$"):
-        return selector_models.VariableSelector(string[1:])
-    return selector_models.ScopeSelector(string)
+def parse_exists(test_str):
+    return selectorparser.to_test(selectorparser.item.parseString(test_str))

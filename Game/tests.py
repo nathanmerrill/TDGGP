@@ -11,7 +11,7 @@ comparisons = {
 
 
 class Test:
-    def test(self, game_state):
+    def test(self, game_state, item):
         pass
 
 
@@ -21,9 +21,9 @@ class TestComparison(Test):
         self.obj1 = obj1
         self.obj2 = obj2
 
-    def test(self, game_state):
-        left = self.obj1.select(game_state)
-        right = self.obj2.select(game_state)
+    def test(self, game_state, selected):
+        left = self.obj1.select(game_state, selected)
+        right = self.obj2.select(game_state, selected)
         if len(left) == 0 or len(right) == 0:
             return False
         assert(len(left) == 1), str(self.obj1) + " returned "+str(len(left))+" objects: " + str(left)
@@ -38,8 +38,8 @@ class TestExists(Test):
     def __init__(self, selector):
         self.selector = selector
 
-    def test(self, game_state):
-        return len(self.selector.select(game_state)) != 0
+    def test(self, game_state, selected):
+        return len(self.selector.select(game_state, selected)) != 0
 
     def __repr__(self):
-        return "Exists("+str(self.selector)+")"
+        return str(self.selector)

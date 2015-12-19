@@ -442,7 +442,7 @@ def learn_game(game_path: str, num_iterations: int, refresh: bool):
 
     players = [
         LearningPlayer(0, input_mapper, output_mapper, scorer, chooser),
-        LearningPlayer(1, input_mapper, output_mapper, scorer, chooser)
+        manualplayer.ManualPlayer(1)
     ]
     wins = 0
     losses = 0

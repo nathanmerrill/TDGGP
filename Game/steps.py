@@ -222,18 +222,14 @@ class ShuffleCollection(Step):
 class Select(Step):
     def __init__(self,
                  selector: Selector,
-                 filters: list,
                  label: str,
                  line_number: int):
         super(Select, self).__init__(line_number)
-        self.filters = filters
         self.selector = selector
         self.label = "selected" if label is None else label
 
     def perform(self, game_state: GameState):
         selected = self.selector.select(game_state)
-        for f in self.filters:
-            selected = f.filter(selected, game_state)
         try:
             game_state.set_var(selected, self.label)
         except:
@@ -242,7 +238,7 @@ class Select(Step):
             raise
 
     def __repr__(self):
-        return str(self.selector)+"["+", ".join(str(f) for f in self.filters)+"]"
+        return str(self.selector)
 
 
 class PlayerSelect(Step):
